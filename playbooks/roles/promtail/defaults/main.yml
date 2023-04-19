@@ -1,0 +1,3 @@
+service_name: promtail
+version: '2.5.0'
+sha256sum: 8da889d768bc9f6aff2e0c9d7f45a86b7eaecce185ccabfc8c3f4a00300a5a84

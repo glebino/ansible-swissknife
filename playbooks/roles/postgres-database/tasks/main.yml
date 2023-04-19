@@ -1,0 +1,17 @@
+- name: ensure user exists
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_user:
+    name: '{{ user }}'
+    password: '{{ password }}'
+  tags: postgres_add_users
+
+- name: ensure database exists
+  become: true
+  become_user: postgres
+  community.postgresql.postgresql_db:
+    name: '{{ db }}'
+    login_unix_socket: /var/run/postgresql
+    owner: '{{ user }}'
+  tags: postgres_create_db
+

@@ -1,0 +1,4 @@
+ansible_pubkey: 
+ansible_privkey: '{{ vault_ansible_privkey }}'
+fact_path: '/etc/ansible/facts.d'
+

@@ -1,0 +1,56 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yml
+
+clients:
+  - url: {{ loki_url }}
+    basic_auth:
+      username: '{{ loki_username }}'
+      password: '{{ loki_password }}'
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          host: '{{ inventory_hostname }}.myapp.com'
+          __path__: /var/log/*log
+
+  - job_name: journald
+    journal:
+      labels:
+        job: journald
+        host: '{{ inventory_hostname }}.myapp.com'
+        type: nojson
+    relabel_configs:
+      - source_labels: [__journal__systemd_unit]
+        target_label: systemd_unit
+      - source_labels: [__journal__priority]
+        target_label: systemd_priority
+      - source_labels: [__journal__hostname]
+        target_label: systemd_hostname
+      - source_labels: [__journal__comm]
+        target_label: systemd_command
+      - source_labels: ['systemd_unit']
+        target_label: app
+        regex: '(\w+)\.service'
+        replacement: '${1}'
+    pipeline_stages:
+      - match:
+          selector: '{systemd_unit="promtail.service"}'
+          stages:
+            - logfmt:
+                mapping:
+                  level: level
+                  ts: ts
+                  caller: caller
+                  component: component
+                  host: host
+                  msg: msg
+                  status: status
+                  error: error

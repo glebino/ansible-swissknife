@@ -1,0 +1,10 @@
+[Unit]
+Description={{ service_name }}
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/{{ service_name }} -config.file=/etc/promtail/promtail.yml
+
+[Install]
+WantedBy=default.target

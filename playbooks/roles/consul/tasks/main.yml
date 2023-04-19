@@ -1,0 +1,105 @@
+- name: Update repositories cache and install gnupg package
+  apt:
+    name: gnupg
+    update_cache: yes
+
+- name: Add consul gpg key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add consul repository into sources list
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://apt.releases.hashicorp.com "{{ ansible_facts['lsb']['codename'] }}" main
+    state: present
+
+- name: Update repositories cache and install consul package
+  apt:
+    name: consul
+    update_cache: yes
+
+- name: Ensure group "consul" exists
+  ansible.builtin.group:
+    name: consul
+    state: present
+
+# - name: add consul user
+#   user:
+#     name: consul
+#     groups: consul
+#     shell: /sbin/nologin
+#     create_home: no
+#     append: yes
+#     comment: "consul nologin user"
+#     state: present
+#   # become: true
+
+# - name: label debug
+#   debug:
+#     msg: '{{ label }}'
+
+# - name: label debug
+#   debug:
+#     msg: '{{ vm_role }}'
+#   tags: debug
+
+- name: Copy consul server.json
+  ansible.builtin.copy:
+    src: files/server.json
+    dest: /etc/consul.d/server.json
+    owner: consul
+    group: consul
+    mode: '0644'
+  when: (vm_role is defined) and (vm_role == "consul-server")
+  tags: update_config
+    
+- name: Copy consul json for traefik
+  ansible.builtin.copy:
+    src: files/consul_self.json
+    dest: /etc/consul.d/consul_self.json
+    owner: consul
+    group: consul
+    mode: '0644'
+  when: vm_role == "consul-server"
+  tags: update_config
+
+- name: Copy nomad.json
+  ansible.builtin.copy:
+    src: files/nomad.json
+    dest: /etc/consul.d/nomad.json
+    owner: consul
+    group: consul
+    mode: '0644'
+  when: inventory_hostname == "nlt-master"
+  tags: update_config
+
+- name: Copy node_exporter configs
+  ansible.builtin.copy:
+    src: files/node_exporter/node_exporter.json
+    dest: /etc/consul.d/node_exporter.json
+    owner: consul
+    group: consul
+    mode: '0644'
+  tags: copy_node_exporter_consul
+  tags: update_config
+
+- name: Restart service consul, in all cases, also issue daemon-reload to pick up config changes
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: consul
+    enabled: yes
+  tags: restart
+
+- name: get consul service status
+  ansible.builtin.systemd:
+    name: "consul"
+  register: consul_status
+  tags: restart
+  
+- name: validate consul status
+  fail:
+    msg: Consul entered failed state. Please, check config!
+  when: consul_status.status.ActiveState != "active"
+  tags: restart
+

@@ -1,0 +1,10 @@
+## must be encrypted with ansible-vault
+##
+
+vault_ansible_privkey: |
+  -----BEGIN OPENSSH PRIVATE KEY-----
+  sdfasdfasdfasdfasdfasdfasdf
+  -----END OPENSSH PRIVATE KEY-----
+
+vault_prometheus_password: 'some-brilliant-pass'
+vault_loki_password: '{{ vault_prometheus_password }}'

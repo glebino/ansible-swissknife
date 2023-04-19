@@ -1,0 +1,42 @@
+- name: install and configure pg_dumps for postgres
+  tags: postgres_pgdump
+  block:
+    - name: create dir for backup
+      ansible.builtin.file:
+        path: /tmp/pg_dump
+        state: directory
+        mode: '0755'
+        owner: postgres
+        group: postgres
+    
+
+    - name: pg_dump 
+      become: true
+      become_user: postgres
+      ansible.builtin.shell: pg_dumpall  --file=/tmp/pg_dump/postgres_backup.dump 
+      args:
+        executable: /bin/bash
+    
+    - name: create cronjob to run pg_dump
+      become: true
+      become_user: postgres
+      ansible.builtin.cron:
+        name: run pg_dump and copy to hetzner-storagebox
+        minute: "0"
+        hour: "1"
+        job: "pg_dumpall --file=/tmp/pg_dump/postgres_backup.dump >> /var/log/postgresql/pg_dump.log 2>&1"
+    
+    - name: create dir for backups
+      delegate_to: backup01
+      ansible.builtin.file:
+        path: /mnt/backup-server/postgres/pg_dump
+        state: directory
+        mode: '0755'
+        owner: ansible
+        group: ansible
+   
+    # - name: 
+    #   ansible.builtin.command: scp {{ inventory_hostname }}:/tmp/pg_dump/postgres_backup.dump /mnt/backup-server/postgres/pg_dump/
+    #   delegate_to: backup01
+    #   become: true
+    #   become_user: ansible

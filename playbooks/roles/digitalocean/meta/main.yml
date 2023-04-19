@@ -1,0 +1,25 @@
+argument_specs:
+  main:
+    options:
+      api_token:
+        type: str
+        required: yes
+      name:
+        type: str
+        required: yes
+      size:
+        type: str
+        required: no
+        default: s-1vcpu-1gb
+      region:
+        type: str
+        required: no
+        default: nyc1
+      image:
+        type: str
+        required: no
+        default: ubuntu-20-04-x64
+      wait_timeout:
+        type: int
+        required: no
+        default: 500

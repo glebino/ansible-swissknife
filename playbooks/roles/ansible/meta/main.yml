@@ -1,0 +1,14 @@
+argument_specs:
+  main:
+    options:
+      username:
+        type: str
+        required: no
+        default: ansible
+      password:
+        type: str
+        required: no
+        default: null
+      pubkey:
+        type: str
+        required: yes

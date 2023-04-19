@@ -1,0 +1,37 @@
+- name: install and configure wal-g backups for postgres
+  tags: postgres_walg_backup
+  block:
+    - name: install wall-g binary
+      ansible.builtin.unarchive:
+        src: https://github.com/wal-g/wal-g/releases/download/v2.0.0/wal-g-pg-ubuntu-20.04-amd64.tar.gz
+        dest: /usr/local/bin
+        remote_src: yes
+
+    - name: rename binary # for version >1.1
+      command: mv /usr/local/bin/wal-g-pg-ubuntu-20.04-amd64 /usr/local/bin/wal-g
+
+    - name: Copy walg.json
+      template:
+        src: files/walg.json.j2
+        dest: /var/lib/postgresql/.walg.json
+        owner: postgres
+        group: postgres
+
+    - name: validate wall-g command 
+      become: true
+      become_user: postgres
+      ansible.builtin.shell: /usr/local/bin/wal-g backup-push /var/lib/postgresql/14/main --config /var/lib/postgresql/.walg.json
+      args:
+        executable: /bin/bash
+    
+    # - name: reload config via sending SIGHUP to all db processes
+    #   shell: "killall -s HUP postgres"
+    
+    - name: create cronjob to run wal-g backup-push to hetzner-storagebox
+      become: true
+      become_user: postgres
+      ansible.builtin.cron:
+        name: run wal-g backup-push to hetzner-storagebox
+        minute: "20"
+        hour: "4"
+        job: "/usr/local/bin/wal-g backup-push /var/lib/postgresql/14/main >> /var/log/postgresql/walg_backup.log 2>&1"

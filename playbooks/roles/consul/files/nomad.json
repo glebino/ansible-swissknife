@@ -1,0 +1,19 @@
+{
+    "service": {
+      "id": "nomad",
+      "name": "nomad",
+      "tags": ["traefik.enable=true",
+              "traefik.http.routers.http.entrypoints=https",
+              "traefik.http.routers.http.rule=Host(`nomad.myapp.com`) && PathPrefix(`/ui`)"
+                                                            ],
+      "address": "10.30.0.85",
+      "port": 4646,
+      "check": {
+        "id": "nomad",
+        "name": "Nomad DNS TCP on port 4646",
+        "tcp": "localhost:4646",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    }
+  }

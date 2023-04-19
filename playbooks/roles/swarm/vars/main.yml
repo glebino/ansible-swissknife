@@ -1,0 +1,2 @@
+  interface_settings_key: 'ansible_{{ manager_interface }}'
+  manager_address: '{{ hostvars[swarm_manager][interface_settings_key]["ipv4"]["address"] }}'

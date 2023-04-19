@@ -1,0 +1,8 @@
+---
+
+- hosts: digitalocean-droplets
+  roles:
+    - role: digitalocean
+      vars:
+        api_token: '{{ digitalocean_api_token }}'
+        name: '{{ inventory_hostname }}'

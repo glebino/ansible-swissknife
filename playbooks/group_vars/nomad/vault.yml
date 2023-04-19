@@ -1,0 +1,3 @@
+## encrypt this with ansible-vault
+
+vault_nomad_vault_token: hvs.blablabla

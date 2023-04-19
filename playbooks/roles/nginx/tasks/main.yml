@@ -1,0 +1,22 @@
+
+- name: 'install nginx'
+  ansible.builtin.apt:
+    name:
+      - nginx
+    state: present
+
+- name: Copy nginx configuration in place.
+  template:
+    src: files/default.conf
+    dest: /etc/nginx/conf.d/default.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload nginx
+
+- name: Ensure nginx service is running as configured.
+  service:
+    name: nginx
+    state: "{{ nginx_service_state }}"
+    enabled: "{{ nginx_service_enabled }}"

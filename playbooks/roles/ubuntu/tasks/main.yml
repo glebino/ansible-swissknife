@@ -1,0 +1,66 @@
+- name: 'install base packages'
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - atop
+      - htop
+      - traceroute
+      - telnet
+      - tcpdump
+      - nmap
+      - netcat
+      - bind9utils
+      - dnsutils
+      - rsync
+      - mlocate
+      - vim
+      - git
+      - zsh
+      - screen
+      - tmux
+      - rustc
+    state: present
+    update_cache: yes
+
+- name: 'install python requirements'
+  ansible.builtin.pip:
+    name:
+      - setuptools-rust
+    state: present
+
+- name: 'enable atop services'
+  ansible.builtin.systemd:
+    name: '{{ item }}.service'
+    state: started
+    enabled: yes
+  loop:
+    - atop
+    - atopacct
+
+- name: 'allow sudo group users use sudo without password'
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^%sudo'
+    line: '%sudo  ALL=(ALL:ALL) NOPASSWD: ALL'
+  
+- name: set server hostname to the one from inventory
+  ansible.builtin.hostname:
+    name: '{{ inventory_hostname }}'
+    use: systemd
+
+- name: "Create user accounts and add users to groups"
+  user:
+    name: "{{ item }}"
+    groups: "sudo"
+    shell: /bin/bash
+  with_items: "{{ users }}"
+  tags: user_add
+
+- name: "Add authorized keys"
+  authorized_key:
+    user: "{{ item }}"
+    key: "{{ lookup('file', 'files/'+ item + '.key.pub') }}"
+  with_items: "{{ users }}"
+  tags: user_add

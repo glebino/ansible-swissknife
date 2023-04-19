@@ -1,0 +1,42 @@
+- name: Add hashicorp gpg key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add hashicorp repository into sources list
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://apt.releases.hashicorp.com "{{ ansible_facts['lsb']['codename'] }}" main
+    state: present
+
+- name: Update repositories cache and install vault package
+  apt:
+    name: vault
+    update_cache: yes
+
+- name: Copy vault.hcl
+  ansible.builtin.copy:
+    src: files/vault.hcl
+    dest: /etc/vault.d/vault.hcl
+    owner: vault
+    group: vault
+    mode: '0644'
+    
+- name: Restart service vault, in all cases, also issue daemon-reload to pick up config changes
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: vault
+    enabled: yes
+
+- name: get vault service status
+  ansible.builtin.systemd:
+    name: "vault"
+  register: "vault_status"
+  
+- name: validate vault status
+  fail:
+    msg: Vault entered failed state. Please, check config!
+  when: vault_status.status.ActiveState != "active"
+
+- name
+

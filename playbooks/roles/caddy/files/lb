@@ -1,0 +1,26 @@
+test.myapp.com {
+	reverse_proxy /.well-known http://test.myapp.com
+}
+
+letrux.myapp.com {
+	reverse_proxy /.well-known http://some-project.myapp.com
+}
+
+traefik.letrux.myapp.com {
+	reverse_proxy /.well-known http://traefik.some-project.myapp.com {
+		lb_policy first
+		lb_try_duration 10s
+	}
+	
+	log {
+		output file /var/log/caddy/traefik.letrux.myapp.com-access.log
+		level error 
+	}
+}
+
+drone.myapp.com {
+	reverse_proxy /.well-known http://drone.myapp.com
+	log {
+		output file /var/log/caddy/drone.myapp.com-access.log 
+	}
+}

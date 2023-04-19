@@ -1,0 +1,15 @@
+myapp_postgres_user: myapp
+myapp_postgres_db: myapp
+myapp_postgres_password: '{{ vault_myapp_postgres_password }}'
+
+myapp_vinyl_postgres_user: myapp_vinyl
+myapp_vinyl_postgres_db: myapp_vinyl
+myapp_vinyl_postgres_password: '{{ vault_myapp_vinyl_postgres_password }}'
+
+myapp_liveandrare_postgres_user: myapp_liveandrare
+myapp_liveandrare_postgres_db: myapp_liveandrare
+myapp_liveandrare_postgres_password: '{{ vault_myapp_liveandrare_postgres_password }}'
+
+myapp_staging_postgres_user: myapp_staging
+myapp_staging_postgres_db: myapp_staging
+myapp_staging_postgres_password: '{{ vault_myapp_staging_postgres_password }}'

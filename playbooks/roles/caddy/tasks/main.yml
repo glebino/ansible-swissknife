@@ -1,0 +1,16 @@
+- include_tasks: debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Copy load-balancer config
+  ansible.builtin.copy:
+    src: files/lb
+    dest: /etc/caddy/Caddyfile
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Caddy and apply configs
+  package:
+    name: "{{  caddy_package }}"
+    state: "{{ caddy_package_state }}"
+  notify: restart caddy

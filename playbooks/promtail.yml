@@ -1,0 +1,9 @@
+---
+
+- hosts: all
+  roles:
+    - role: promtail
+      vars:
+        loki_url: https://loki.myapp.com/loki/api/v1/push
+        loki_username: myapp
+        loki_password: '{{ vault_loki_password }}'

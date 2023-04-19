@@ -1,0 +1,59 @@
+- name: Ensure PostgreSQL Python psycopg2 lib is installed.
+  apt:
+    name: python3-psycopg2
+    state: present
+
+- name: Add postgres key
+  ansible.builtin.apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Add postgres repository into sources list
+  ansible.builtin.apt_repository:
+    repo: deb http://apt.postgresql.org/pub/repos/apt "{{ ansible_facts['lsb']['codename'] }}-pgdg" main
+    state: present
+
+- name: Update repositories cache and install postgres package
+  ansible.builtin.apt:
+    name:
+      - acl
+      - postgresql
+      - postgresql-contrib
+      - libpq-dev
+    update_cache: yes
+
+- name: update_configs
+  tags: postgres_update_configs
+  block:
+    - name: Copy myapp.conf to conf.d
+      ansible.builtin.copy:
+        src: files/00server.conf
+        dest: /etc/postgresql/14/main/conf.d/myapp.conf
+        owner: postgres
+        group: postgres
+        mode: '0644'
+    
+    - name: Copy pg_hba.conf
+      ansible.builtin.copy:
+        src: files/pg_hba.conf
+        dest: /etc/postgresql/14/main/pg_hba.conf
+        owner: postgres
+        group: postgres
+        mode: '0644'
+    
+    - name: Restart service postgres to pick up config changes
+      ansible.builtin.systemd:
+        state: restarted
+        daemon_reload: yes
+        name: postgresql
+        enabled: yes
+    
+    - name: get postgresql service status
+      ansible.builtin.systemd:
+        name: postgresql
+      register: postgresql_status
+    
+    - name: validate postgresql status
+      fail:
+        msg: Consul entered failed state. Please, check config!
+      when: postgresql_status.status.ActiveState != "active"

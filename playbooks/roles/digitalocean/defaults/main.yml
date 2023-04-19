@@ -1,0 +1,4 @@
+size: s-1vcpu-1gb
+region: nyc1
+image: ubuntu-20-04-x64
+wait_timeout: 500

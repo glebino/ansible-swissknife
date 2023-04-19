@@ -1,0 +1,52 @@
+- name: install requirements
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+
+- name: ensure cache dir exists
+  ansible.builtin.file:
+    path: /etc/ansible/cache
+    state: directory
+
+- name: download
+  ansible.builtin.get_url:
+    url: https://github.com/grafana/loki/releases/download/v{{ version }}/promtail-linux-amd64.zip
+    dest: /etc/ansible/cache/promtail-linux-amd64.zip
+    checksum: sha256:{{ sha256sum }}
+  register: archive_file
+
+- name: unpack
+  ansible.builtin.unarchive:
+    src: '{{ archive_file.dest }}'
+    remote_src: yes
+    dest: /etc/ansible/cache/
+  register: distro_path
+
+- name: install executable system-wide
+  ansible.builtin.copy:
+    src: /etc/ansible/cache/promtail-linux-amd64
+    dest: /usr/local/bin/promtail
+    remote_src: yes
+    mode: 0755
+
+- name: create configuration directory
+  ansible.builtin.file:
+    path: /etc/{{ service_name }}
+    state: directory
+
+- name: template out config
+  ansible.builtin.template:
+    src: etc/promtail/promtail.yml
+    dest: /etc/promtail/promtail.yml
+
+- name: install service systemd unit file
+  ansible.builtin.template:
+    src: etc/systemd/system/systemd-service.service
+    dest: /etc/systemd/system/{{ service_name }}.service
+
+- name: reload systemd service
+  ansible.builtin.systemd:
+    name: '{{ service_name }}'
+    state: restarted
+    enabled: yes
+    daemon_reload: yes

@@ -1,0 +1,64 @@
+- name: Create a cache directory if it does not exist
+  ansible.builtin.file:
+    path: /etc/ansible/cache
+    state: directory
+    mode: '0755'
+
+- name: download node exporter
+  ansible.builtin.get_url:
+    url: https://github.com/prometheus/node_exporter/releases/download/v{{ version }}/node_exporter-{{ version }}.linux-amd64.tar.gz
+    dest: /etc/ansible/cache/node_exporter-{{ version }}-amd64.tar.gz
+    checksum: sha256:{{ sha256sum }}
+  register: node_exporter_archive
+
+- name: unpack node export
+  ansible.builtin.unarchive:
+    src: '{{ node_exporter_archive.dest }}'
+    remote_src: yes
+    dest: /etc/ansible/cache/
+  register: node_exporter_distro
+
+- name: install node exporter executable system-wide
+  ansible.builtin.copy:
+    src: '{{ node_exporter_distro.dest }}/node_exporter-{{ version }}.linux-amd64/node_exporter'
+    dest: '/usr/local/bin/node_exporter'
+    remote_src: yes
+    mode: 0755
+
+- name: create node exporter directory
+  ansible.builtin.file:
+    path: /etc/node-exporter
+    state: directory
+
+# - name: import ssl-certificate role
+#   vars:
+#     name: '{{ inventory_hostname }}.{{ default_dns_zone }}'
+#     common_name: '{{ inventory_hostname }}.{{ default_dns_zone }}'
+#     type: selfsigned
+#     privkey_path: '{{ ssl_privkey }}'
+#     cert_path: '{{ ssl_cert }}'
+#     csr_path: '{{ ssl_csr }}'
+#   ansible.builtin.import_role:
+#     name: ssl-certificate
+
+# - name: template out web-config.yml
+#   ansible.builtin.template:
+#     src: etc/node-exporter/web-config.yml
+#     dest: /etc/node-exporter/web-config.yml
+
+# - name: install node exporter systemd unit file with webconfig
+#   ansible.builtin.template:
+#     src: etc/systemd/system/node-exporter-web-config.service
+#     dest: /etc/systemd/system/node-exporter.service
+
+- name: install node exporter systemd unit file
+  ansible.builtin.template:
+    src: etc/systemd/system/node-exporter.service
+    dest: /etc/systemd/system/node-exporter.service
+
+- name: reload systemd service
+  ansible.builtin.systemd:
+    name: node-exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes

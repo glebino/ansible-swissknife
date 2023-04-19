@@ -1,0 +1,31 @@
+
+- name: install and configure backups for postgres
+  tags: storagebox_backup
+  block:
+    - name: create dir for backups
+      ansible.builtin.file:
+        path: /mnt/backup-server/pfs/
+        state: directory
+        mode: '0755'
+        owner: ansible
+        group: ansible
+    
+    - name: Copy backup script for pfs backups
+      ansible.builtin.copy:
+        src: files/pfs.sh
+        dest: /home/ansible/pfs_configs_backup.sh
+        owner: ansible
+        group: ansible
+        # mode: '0644'
+
+    - name: create cronjob for pfs backups
+      ansible.builtin.cron:
+        minute: "0"
+        hour: "0"
+        job: "/home/ansible/pfs_configs_backup.sh"
+    
+    - name: create cronjob for postgres backups
+      ansible.builtin.cron:
+        minute: "20"
+        hour: "5"
+        job: "/home/ansible/pfs_configs_backup.sh"

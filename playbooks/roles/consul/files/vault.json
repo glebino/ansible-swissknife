@@ -1,0 +1,26 @@
+{
+    "server": false,
+    "datacenter": "consul01",
+    "data_dir": "consul/data",
+    "log_level": "INFO",
+    "bind_addr": "{{GetInterfaceIP \"ens18\"}}",
+    "retry_join": ["consul-server"],
+    "start_join": ["10.30.0.50", "10.30.0.52", "10.30.0.51", "10.30.0.53"],
+    "service": {
+      "id": "vault",
+      "name": "vault",
+      "tags": ["traefik.enable=true",
+              "traefik.http.routers.http.rule=Path(`/vault`)",
+              "traefik.http.routers.http.rule=Host(`vault.myapp.com`) && PathPrefix(`/ui`)"
+                                                            ],
+      "address": "10.30.0.63",
+      "port": 8200,
+      "check": {
+        "id": "vault",
+        "name": "Consul DNS TCP on port 8200",
+        "tcp": "localhost:8200",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    }
+  }

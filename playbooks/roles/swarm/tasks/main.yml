@@ -1,0 +1,32 @@
+- name: init swarm
+  community.general.docker_swarm:
+    state: present
+    advertise_addr: '{{ manager_address }}'
+  register: swarm_info
+  when: swarm_manager == inventory_hostname
+
+- name: add join tokens to facts
+  ansible.builtin.set_fact:
+    manager_join_token: '{{ swarm_info["swarm_facts"]["JoinTokens"]["Manager"] }}'
+    worker_join_token: '{{ swarm_info["swarm_facts"]["JoinTokens"]["Worker"] }}'
+  when: swarm_manager == inventory_hostname
+
+- name: join worker nodes with manager node
+  community.general.docker_swarm:
+    state: join
+    join_token: '{{ hostvars[swarm_manager]["worker_join_token"] }}'
+    remote_addrs:
+      - '{{ manager_address }}'
+  when: swarm_manager != inventory_hostname
+  register: join_nodes
+
+- name: add labels to nodes
+  delegate_to: '{{ swarm_manager}}'
+  # community.general.docker_swarm:
+  community.docker.docker_node:
+    hostname: '{{ inventory_hostname }}'
+    labels:
+      "{{ label }}': 'true'
+    labels_state: merge
+  when: swarm_manager != inventory_hostname
+  tags: add_labels

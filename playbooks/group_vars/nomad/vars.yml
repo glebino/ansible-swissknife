@@ -1,0 +1,1 @@
+nomad_vault_token: '{{ vault_nomad_vault_token }}'

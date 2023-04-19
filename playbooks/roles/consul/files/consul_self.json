@@ -1,0 +1,12 @@
+{
+    "service": {
+      "id": "consul",
+      "name": "consul",
+      "tags": ["traefik.enable=true",
+              "traefik.http.routers.http.entrypoints=https",
+              "traefik.http.routers.http.rule=Host(`consul.myapp.com`) && PathPrefix(`/ui`)"
+                                                            ],
+      "address": "10.30.0.61",
+      "port": 8300
+    }
+  }

@@ -1,0 +1,5 @@
+---
+
+- hosts: swarm-clusters
+  roles:
+    - swarm

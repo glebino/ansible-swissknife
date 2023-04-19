@@ -1,0 +1,10 @@
+[Unit]
+Description=Prometheus Node Exporter
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/node_exporter --web.config="/etc/node-exporter/web-config.yml"
+
+[Install]
+WantedBy=default.target

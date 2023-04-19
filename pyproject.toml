@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "myapp-ansible"
+version = "0.1.0"
+description = "ansible configuration for myapp project"
+authors = ["ole"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ansible = "^5.0.1"
+netaddr = "^0.8.0"
+PyYAML = "^6.0"
+passlib = "^1.7.4"
+
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

@@ -1,0 +1,88 @@
+# - name: Update repositories cache and install gnupg package
+#   apt:
+#     name: gnupg2
+#     update_cache: yes
+
+- name: Add hashicorp gpg key
+  ansible.builtin.apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Add hashicorp repository into sources list
+  ansible.builtin.apt_repository:
+    repo: deb [arch=amd64] https://apt.releases.hashicorp.com "{{ ansible_facts['lsb']['codename'] }}" main
+    state: present
+
+- name: Update repositories cache and install nomad package
+  apt:
+    name: nomad
+    update_cache: yes
+
+- name: Copy nomad server config to conf.d
+  ansible.builtin.template:
+    src: files/nomad-server.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    owner: nomad
+    group: nomad
+    mode: '0644'
+  tags: update_config
+  when: inventory_hostname == "nlt-master"
+
+- name: Copy nomad client config to conf.d
+  ansible.builtin.template:
+    src: files/nomad-client.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+    owner: nomad
+    group: nomad
+    mode: '0644'
+  tags: update_config
+  when: inventory_hostname != "nlt-master"
+
+#- name: Copy nomad client config with backend service volumes to conf.d
+#  ansible.builtin.copy:
+#    src: files/nomad-client-backend.hcl
+#    dest: /etc/nomad.d/nomad.hcl
+#    owner: nomad
+#    group: nomad
+#    mode: '0644'
+#  tags: update_config
+#  when: inventory_hostname == "nlt1"
+
+
+#- name: Create volume directory if it does not exist
+#  ansible.builtin.file:
+#    path: /opt/media
+#    state: directory
+#    mode: '0755'
+#    owner: nomad 
+#    group: nomad
+#  when: inventory_hostname == "nlt1"
+
+# - name: Copy anonymous.policy to conf.d
+#   ansible.builtin.copy:
+#     src: files/anonymous.policy.hcl
+#     dest: /etc/nomad.d/anonymous.policy.hcl
+#     owner: nomad
+#     group: nomad
+#     mode: '0644'
+#   tags: update_policy
+
+- name: Restart service nomad, in all cases, also issue daemon-reload to pick up config changes
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: nomad
+    enabled: yes
+  tags: restart_nomad
+
+- name: get nomad service status
+  ansible.builtin.systemd:
+    name: "nomad"
+  register: nomad_status
+  tags: restart_nomad
+  
+- name: validate nomad status
+  fail:
+    msg: Nomad entered failed state. Please, check config!
+  when: nomad_status.status.ActiveState != "active"
+  tags: restart_nomad

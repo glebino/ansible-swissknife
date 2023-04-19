@@ -1,0 +1,30 @@
+---
+
+- hosts: postgres
+  roles:
+    - postgres
+    - postgres-walg
+    - postgres-pgdump
+    - role: postgres-database
+      vars:
+        db: '{{ myapp_postgres_db }}'
+        user: '{{ myapp_postgres_user }}'
+        password: '{{ myapp_postgres_password }}'
+    - role: postgres-database
+      vars:
+        db: '{{ myapp_vinyl_postgres_db }}'
+        user: '{{ myapp_vinyl_postgres_user }}'
+        password: '{{ myapp_vinyl_postgres_password }}'
+
+    - role: postgres-database
+      vars:
+        db: '{{ myapp_liveandrare_postgres_db }}'
+        user: '{{ myapp_liveandrare_postgres_user }}'
+        password: '{{ myapp_liveandrare_postgres_password }}'
+    
+    - role: postgres-database
+      vars:
+        db: '{{ myapp_staging_postgres_db }}'
+        user: '{{ myapp_staging_postgres_user }}'
+        password: '{{ myapp_staging_postgres_password }}'
+      tags: create_myapp_staging_pg_db

@@ -1,0 +1,20 @@
+{
+    "node_name": "consul-server",
+    "server": true,
+    "bootstrap": true,
+    "ui": true,
+    "ui_config": {
+      "enabled": true
+    },
+    "datacenter": "consul01",
+    "data_dir": "/opt/consul/",
+    "log_level": "INFO",
+    "bind_addr": "{{GetInterfaceIP \"ens18\"}}",
+    "start_join": ["10.30.0.50", "10.30.0.52", "10.30.0.51"],
+    "addresses": {
+      "http": "0.0.0.0"
+    },
+    "connect": {
+      "enabled": true
+    }
+  }

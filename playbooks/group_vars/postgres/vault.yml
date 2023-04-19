@@ -1,0 +1,7 @@
+vault_myapp_postgres_password:
+vault_myapp_vinyl_postgres_password: 
+vault_myapp_liveandrare_postgres_password: 
+vault_myapp_staging_postgres_password: 
+
+postgres_walg_storagebox_user:                                                                                                                
+postgres_walg_storagebox_password:
